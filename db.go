@@ -3,13 +3,14 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	_ "github.com/lib/pq"
 )
 
 type databaseI interface {
 	CreateUrl(Url) error
-	DeleteUrl(int) error
+	DeleteUrlByShortUrl(string) error
 	GetUrlByID(int) (*Url, error)
 	GetUrlByShortUrl(string) (*Url, error)
 }
@@ -43,10 +44,10 @@ func (db *PostgresDB) CreateTables() error {
 	// 2083 - value from stackOverflow (practical limit of the http protocole)
 	// 8 - length of the shortened url
 	query := `CREATE TABLE IF NOT EXISTS url (
-		id INT PRIMARY KEY,
-		long_url VARCHAR(2083), 
-		short_url VARCHAR(8),
-		created_at TIMESTAMP
+		id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+		long_url VARCHAR(2083) NOT NULL, 
+		short_url VARCHAR(8) NOT NULL UNIQUE ,
+		created_at TIMESTAMP WITH TIME ZONE NOT NULL
 	) `
 
 	_, err := db.db.Exec(query)
@@ -55,24 +56,25 @@ func (db *PostgresDB) CreateTables() error {
 
 func (db *PostgresDB) CreateUrl(url Url) error {
 	query := fmt.Sprintf(
-		`INSERT INT url
+		`INSERT INTO url
 		(long_url, short_url, created_at) 
-		VALUES (%v , %v, %v)`, url.LongUrl, url.ShortUrl, url.CreatedAt,
+		VALUES ('%v' , '%v', '%v')`, url.LongUrl, url.ShortUrl, parseTimeStampForPostgres(url.CreatedAt),
 	)
 
 	_, err := db.db.Exec(query)
+	//return fmt.Errorf(query)
 	return err
 }
 
-func (db *PostgresDB) DeleteUrl(id int) error {
-	query := fmt.Sprintf("DELETE FROM url WHERE id=%v", id)
+func (db *PostgresDB) DeleteUrlByShortUrl(url string) error {
+	query := fmt.Sprintf("DELETE FROM url WHERE short_url=%v", url)
 
 	_, err := db.db.Query(query)
 	return err
 }
 
 func (db *PostgresDB) GetUrlByID(id int) (*Url, error) {
-	query := fmt.Sprintf(`SELECT * FROM url WHERE id=%v`, id)
+	query := fmt.Sprintf(`SELECT * FROM url WHERE id='%v'`, id)
 
 	row := db.db.QueryRow(query)
 
@@ -86,7 +88,7 @@ func (db *PostgresDB) GetUrlByID(id int) (*Url, error) {
 }
 
 func (db *PostgresDB) GetUrlByShortUrl(url string) (*Url, error) {
-	query := fmt.Sprintf(`SELECT * FROM url WHERE short_url=%v`, url)
+	query := fmt.Sprintf(`SELECT * FROM url WHERE short_url='%v'`, url)
 
 	row := db.db.QueryRow(query)
 
@@ -109,4 +111,8 @@ func scanIntoUrl(rows *sql.Row) (*Url, error) {
 	)
 
 	return url, err
+}
+
+func parseTimeStampForPostgres(date time.Time) string {
+	return date.Format(time.RFC3339)
 }
