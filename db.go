@@ -67,7 +67,7 @@ func (db *PostgresDB) CreateUrl(url Url) error {
 }
 
 func (db *PostgresDB) DeleteUrlByShortUrl(url string) error {
-	query := fmt.Sprintf("DELETE FROM url WHERE short_url=%v", url)
+	query := fmt.Sprintf("DELETE FROM url WHERE short_url='%v'", url)
 
 	_, err := db.db.Query(query)
 	return err
