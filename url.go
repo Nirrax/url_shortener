@@ -7,20 +7,17 @@ import (
 )
 
 type Url struct {
-	ID        int32
-	LongUrl   string
-	ShortUrl  string
-	CreatedAt time.Time
+	ID        int32     `json:"id"`
+	LongUrl   string    `json:"longUrl"`
+	ShortUrl  string    `json:"shortUrl"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type UrlDto struct {
+	LongUrl string `json:"longUrl"`
 }
 
 func NewUrl(longUrl string) (*Url, error) {
-
-	id, err := securerandom.Int32()
-
-	if err != nil {
-		return nil, err
-	}
-
 	shortUrl, err := securerandom.URLBase64InBytes(8)
 
 	if err != nil {
@@ -28,9 +25,8 @@ func NewUrl(longUrl string) (*Url, error) {
 	}
 
 	return &Url{
-		ID:        id,
 		LongUrl:   longUrl,
 		ShortUrl:  shortUrl,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
 	}, nil
 }
