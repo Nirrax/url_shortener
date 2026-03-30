@@ -37,7 +37,7 @@ func LoadConfig() Config {
 		RunUpMigration: viper.GetBool("RUN_UP_MIGRATION"),
 
 		PostgresConfig: PostgresConfig{
-			DBHost:     viper.GetString("DB_HOST"),
+			DBhost:     viper.GetString("DB_HOST"),
 			DBport:     viper.GetString("DB_PORT"),
 			DBuser:     viper.GetString("DB_USER"),
 			DBpassword: viper.GetString("DB_PASSWORD"),
