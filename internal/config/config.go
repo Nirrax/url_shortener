@@ -13,7 +13,7 @@ type Config struct {
 }
 
 type PostgresConfig struct {
-	DBHost     string
+	DBhost     string
 	DBport     string
 	DBuser     string
 	DBpassword string
